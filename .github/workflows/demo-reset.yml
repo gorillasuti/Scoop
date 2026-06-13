@@ -1,0 +1,14 @@
+name: Demo Reset Cron
+
+on:
+  schedule:
+    - cron: '0 */5 * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  reset:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Demo Reset Endpoint
+        run: |
+          curl -f -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" https://scoop-demo.vercel.app/api/demo-reset

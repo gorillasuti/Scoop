@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// NextAuth Schema
+model Account {
+  id                 String  @id @default(cuid())
+  userId             String
+  type               String
+  provider           String
+  providerAccountId  String
+  refresh_token      String?  @db.Text
+  access_token       String?  @db.Text
+  expires_at         Int?
+  token_type         String?
+  scope              String?
+  id_token           String?  @db.Text
+  session_state      String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(USER)
+  createdAt     DateTime  @default(now())
+
+  // password & security fields (from Dub.co)
+  passwordHash         String?
+  invalidLoginAttempts Int       @default(0)
+  lockedAt             DateTime?
+
+  // onboarding
+  onboardingComplete   Boolean   @default(false)
+  familyName           String?
+  preferences          String[]  @default([])
+
+  accounts      Account[]
+  sessions      Session[]
+  recipes       Recipe[]
+  createdInvites Invite[]  @relation("CreatedInvites")
+  likes         Like[]
+  notificationsReceived Notification[] @relation("UserNotifications")
+  notificationsSent     Notification[] @relation("SenderNotifications")
+  pushSubscriptions     PushSubscription[]
+  mealPlansReceived     MealPlan[]     @relation("UserMealPlans")
+  mealPlansCreated      MealPlan[]     @relation("CreatorMealPlans")
+  shoppingList          ShoppingList?
+}
+
+model Invite {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  maxUses   Int      @default(1)
+  uses      Int      @default(0)
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+
+  creatorId String
+  creator   User     @relation("CreatedInvites", fields: [creatorId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// Application Schema
+model Recipe {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  prepTime    Int?     // in minutes
+  cookTime    Int?     // in minutes
+  servings    Int?
+  category    String?  // e.g. "appetizers", "soups", "mains", etc.
+  difficulty  String?  // e.g. "Könnyű", "Közepes", "Nehéz"
+  tags        String[] @default([])
+  videoUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  ingredients Ingredient[]
+  instructions Instruction[]
+  media       Media[]
+  likes       Like[]
+}
+
+model Ingredient {
+  id        String   @id @default(cuid())
+  name      String
+  quantity  Float?
+  unit      String?
+  recipeId  String
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+model Instruction {
+  id        String   @id @default(cuid())
+  step      Int
+  content   String
+  recipeId  String
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  url       String
+  type      String   // e.g. "image" or "video"
+  recipeId  String
+  recipe    Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  recipeId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  recipe Recipe @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, recipeId])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  senderId  String
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+  recipeId  String?
+  date      String?
+
+  user      User     @relation("UserNotifications", fields: [userId], references: [id], onDelete: Cascade)
+  sender    User     @relation("SenderNotifications", fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model MealPlan {
+  id        String   @id @default(cuid())
+  userId    String
+  creatorId String
+  recipeId  String
+  date      String
+  message   String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation("UserMealPlans", fields: [userId], references: [id], onDelete: Cascade)
+  creator   User     @relation("CreatorMealPlans", fields: [creatorId], references: [id], onDelete: Cascade)
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ShoppingList {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  recipeIds     String[]
+  checkedKeys   String[]
+  isShared      Boolean  @default(false)
+  sharedWithIds String[]
+  familyName    String?
+  updatedAt     DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

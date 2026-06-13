@@ -1,0 +1,41 @@
+services:
+  db:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-scoop}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-scoop_secret}
+      POSTGRES_DB: ${POSTGRES_DB:-scoop_db}
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-scoop} -d ${POSTGRES_DB:-scoop_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  web:
+    build: .
+    user: root
+    restart: always
+    ports:
+      - "9996:3000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-scoop}:${POSTGRES_PASSWORD:-scoop_secret}@db:5432/${POSTGRES_DB:-scoop_db}?schema=public
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET:-your_super_secret_key_here}
+      - NEXTAUTH_URL=${NEXTAUTH_URL:-http://localhost:9996}
+      - AUTH_TRUST_HOST=true
+      - NEXT_PUBLIC_VAPID_PUBLIC_KEY=${NEXT_PUBLIC_VAPID_PUBLIC_KEY}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY}
+      - VAPID_EMAIL=${VAPID_EMAIL}
+    volumes:
+      - ./public/uploads:/app/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

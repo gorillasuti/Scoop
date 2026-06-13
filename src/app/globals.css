@@ -1,0 +1,333 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   THEME VARIABLES & DESIGN TOKENS
+   ========================================================================== */
+@theme {
+  /* Typography Configuration */
+  --font-nunito: var(--font-nunito);
+  --font-sans: var(--font-nunito);
+  --font-serif: var(--font-alegreya);
+
+  /* App Color Palette (Scoop Brand System) */
+  --color-bg-primary: #FCF9F8;
+  --color-bg-card: #FAF7F6;
+  --color-bg-card-hover: #F2EFEF;
+  --color-bg-input: #FCF9F8;
+  --color-bg-elevated: #F0EDED;
+
+  --color-border-subtle: #E5E2E1;
+  --color-border-default: #CCCCCC;
+
+  --color-text-primary: #1C1B1B;
+  --color-text-secondary: #5C5959;
+  --color-text-tertiary: #8C8989;
+
+  /* Accent Colors & 3D Interactive Elements */
+  --color-accent-primary: #007bff;
+  --color-accent-primary-hover: #0069d9;
+  --color-accent-secondary: #6c757d;
+  --color-accent-red: #dc3545;
+
+  /* Border Radii */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-xl: 32px;
+  --radius-full: 9999px;
+
+  /* Special Shadows & Glows */
+  --shadow-glow: 0 8px 24px -4px rgba(0, 123, 255, 0.4);
+}
+
+/* ==========================================================================
+   BASE & RESET STYLES
+   ========================================================================== */
+@layer base {
+  html {
+    background-color: #FCF9F8;
+    /* Safe fallback for iOS elastic scroll & overscroll */
+  }
+
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overscroll-behavior-y: none;
+    /* Prevents pull-to-refresh on pages where it is undesired */
+    background: linear-gradient(to bottom, #FCF9F8, #E9F0FD);
+    background-attachment: fixed;
+    min-height: 100dvh;
+  }
+}
+
+/* ==========================================================================
+   FORM & INPUT BEHAVIORS
+   ========================================================================== */
+
+/* Modern Autofill Color Overrides (Prevents yellow browser highlights) */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px var(--color-bg-card) inset !important;
+  -webkit-text-fill-color: var(--color-text-primary) !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* Prevents automatic zoom-in on focused form controls in iOS Safari (under 1024px) */
+@media (max-width: 1024px) {
+
+  input[type="text"],
+  input[type="number"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* ==========================================================================
+   UTILITY & LAYOUT HELPER CLASSES
+   ========================================================================== */
+
+/* Cross-browser scrollbar hiding utility */
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari, and Opera */
+}
+
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+}
+
+/* Hides top/global header on sub-pages or custom modal views */
+body.hide-global-header .app-header-container {
+  display: none !important;
+}
+
+/* ==========================================================================
+   DEMO MODE STYLES
+   Only rendered when NEXT_PUBLIC_DEMO_MODE=true
+   ========================================================================== */
+
+/* --- Phone Frame (Desktop only) --- */
+.demo-frame-bg {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 48px;
+  background: linear-gradient(135deg, #E9F0FD 0%, #C8DDF8 100%);
+  overflow: hidden;
+  z-index: 0;
+}
+
+.demo-frame-phone {
+  position: relative;
+  width: 430px;
+  height: min(932px, calc(100vh - 40px));
+  border-radius: 48px;
+  border: 4px solid #ffffff;
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.05),
+    0 25px 80px rgba(0, 0, 0, 0.1),
+    0 0 60px rgba(0, 123, 255, 0.05);
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #FCF9F8;
+  transform: translateZ(0);
+  /* Creates a containing block so fixed BottomNav stays inside */
+}
+
+.demo-frame-notch {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 28px;
+  background: #0f0f1a;
+  border-radius: 20px;
+  z-index: 9999;
+}
+
+.demo-frame-screen {
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE/Edge */
+  padding-top: 38px;
+  /* Clear the dynamic island notch */
+}
+
+/* Fix nested dvh scaling inside the fixed PC wrapper */
+.demo-frame-screen [class*="h-[100dvh]"],
+.demo-frame-screen [class*="min-h-[100dvh]"] {
+  height: 100% !important;
+  min-height: 100% !important;
+}
+
+.demo-frame-screen::-webkit-scrollbar {
+  display: none;
+  /* Chrome, Safari and Opera */
+}
+
+.demo-frame-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  max-width: 220px;
+  text-align: center;
+}
+
+.demo-frame-side--left {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.demo-frame-side--right {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.demo-frame-github {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 28px;
+  border-radius: 999px;
+  background-color: #24292e;
+  border: 2px solid #1b1f23;
+  box-shadow: 0 4px 0 #1b1f23;
+  color: #ffffff;
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: 15px;
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.demo-frame-github:hover {
+  background-color: #2f363d;
+  border-color: #1b1f23;
+}
+
+.demo-frame-github:active {
+  transform: translateY(4px);
+  box-shadow: 0 0 0 transparent;
+}
+
+.demo-frame-subtitle {
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.demo-frame-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background-color: #FCF9F8;
+  border: 2px solid var(--color-border-default);
+  border-radius: 20px;
+  padding: 18px 24px;
+  box-shadow: 0 4px 0 #E5E2E1;
+  font-family: var(--font-sans);
+}
+
+.demo-frame-label {
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.demo-frame-reset-note {
+  color: var(--color-text-tertiary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+/* Hide side panels on narrower desktops where there's no room */
+@media (max-width: 900px) {
+  .demo-frame-side {
+    display: none;
+  }
+
+  .demo-frame-bg {
+    gap: 0;
+  }
+}
+
+/* --- Demo Banner (inside app) --- */
+.demo-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 50;
+}
+
+.demo-banner-text {
+  flex: 1;
+  text-align: center;
+}
+
+.demo-banner-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.demo-banner-close:hover {
+  background: rgba(255, 255, 255, 0.35);
+}
+
+/* --- Demo Login Badge --- */
+.demo-login-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: linear-gradient(90deg, #007bff15, #007bff08);
+  border: 2px solid #007bff30;
+  border-radius: 16px;
+  color: #007bff;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  justify-content: center;
+}

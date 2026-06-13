@@ -1,0 +1,15 @@
+node_modules
+.next
+out
+.git
+.gitignore
+*.pem
+*.key
+certificates
+README.md
+Dockerfile
+docker-compose.yml
+public/uploads/*
+.env*
+.agents
+**/*.md
